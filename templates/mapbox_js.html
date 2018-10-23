@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>Display a map</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js'></script>
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+        .loader {
+            margin: -10px 0 0 -10px;
+            height: 100px;
+            width: 20%;
+            position: fixed;
+            text-align: center;
+            padding: 1em;
+            top: 50%;
+            left: 50%;
+            margin: 0 auto 1em;
+            z-index: 9999;
+        }
+        svg path,
+        svg rect {
+            fill: #b92b27;
+        }
+        .mapboxgl-popup-content {
+            background-color: #202020;
+            color: #fff;
+            margin-left: 5px;
+            margin-top: 2px;
+            margin-bottom: 2px;
+            margin-right: 5px;
+            z-index: 1000;
+        }
+        .map-overlay {
+            position: absolute;
+            width: 180px;
+            top: 0;
+            left: 10px;
+            padding: 10px;
+            margin-left: 5px;
+            margin-top: 2px;
+            margin-bottom: 2px;
+            margin-right: 5px;
+            z-index: 1;
+        }
+    
+        .map-overlay .map-overlay-inner {
+            background: rgba(0, 0, 0, .8);
+            color: #fff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.10);
+            border-radius: 3px;
+            padding: 10px;
+            margin-bottom: 10px;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+<div id='map'></div>
+<div class='map-overlay top'>
+    <div class='map-overlay-inner'>
+        <button id="reset-button" type="reset">Undo</button>
+    </div>
+</div>
+<div class="loader loader--style1" title="0" id="loader">
+        <svg version="1.1" id="loader-1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="40px" height="40px" viewBox="0 0 40 40" enable-background="new 0 0 40 40" xml:space="preserve">
+            <path opacity="0.2" fill="#000" d="M20.201,5.169c-8.254,0-14.946,6.692-14.946,14.946c0,8.255,6.692,14.946,14.946,14.946
+    s14.946-6.691,14.946-14.946C35.146,11.861,28.455,5.169,20.201,5.169z M20.201,31.749c-6.425,0-11.634-5.208-11.634-11.634
+    c0-6.425,5.209-11.634,11.634-11.634c6.425,0,11.633,5.209,11.633,11.634C31.834,26.541,26.626,31.749,20.201,31.749z" />
+            <path fill="#000" d="M26.013,10.047l1.654-2.866c-2.198-1.272-4.743-2.012-7.466-2.012h0v3.312h0
+    C22.32,8.481,24.301,9.057,26.013,10.047z">
+                <animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="0.5s" repeatCount="indefinite" />
+            </path>
+        </svg>
+    </div>
+<script>
+mapboxgl.accessToken = '{{ACCESS_KEY}}'
+var map = new mapboxgl.Map({
+    container: 'map', // container id
+    style: 'mapbox://styles/mapbox/dark-v9', // stylesheet location
+    center: [-122.486052, 37.830348], // starting position [lng, lat]
+    zoom: 10,
+    pitch: 40 // starting zoom
+});
+
+function init() {
+    map.addSource('routes-data', {
+        type: 'geojson',
+        data: 'http://127.0.0.1:5000/data/all_lines.json',
+        buffer: 64,
+        tolerance: 0.8
+    })
+
+    map.addLayer({
+        "id": "routes",
+        "type": "line",
+        "source":'routes-data',
+        "layout": {
+            "line-join": "round",
+            "line-cap": "round"
+        },
+        "paint": {
+            "line-color": ['get', 'color'],
+            "line-width": 5
+        },
+        "filter": ["==", "$type", "LineString"],
+    });
+
+    document.getElementById("reset-button").disabled = true;
+}
+
+map.once('style.load', function(e){
+    init();
+    map.addControl(new mapboxgl.NavigationControl());
+
+    // pop-up on click
+    map.on('click', function(e) {
+        e.preventDefault();
+        var features = map.queryRenderedFeatures(e.point, {
+                layers: ['routes']
+            });
+            if (!features.length) {
+                return;
+            }
+            var feature = features[0];
+
+            var popup = new mapboxgl.Popup()
+                .setLngLat(map.unproject(e.point))
+                .setHTML('<h3>Route Detail</h3>' +
+                    '<ul>' +
+                    '<li>Start time: <b>' + feature.properties.start_time + '</b></li>' +
+                    '<li>End time: <b>' + feature.properties.end_time + '</b></li>' +
+                    '<li>Avg speed: <b>' + feature.properties.avg_speed + '</b></li>' +
+                    '</ul>' + 
+                    '<canvas id="speedChart" width="400" height="400"></canvas>')
+                .addTo(map);
+
+                console.log(JSON.parse(feature.properties.speed_distr))
+
+                var ctx = document.getElementById("speedChart");
+                var barChartData = {
+			labels: ['0-10', '10-20', '20-30', '30-40', '40-50', '50-60'],
+			datasets: [{
+				label: 'Frequency',
+				backgroundColor: feature.properties.color,
+				borderColor: feature.properties.color,
+				borderWidth: 1,
+				data: JSON.parse(feature.properties.speed_distr)
+			}]
+		};
+                var speedChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: barChartData,
+                    options: {
+					    responsive: true,
+					    title: {
+						    display: true,
+						    text: 'Distribution of speed'
+					    }
+				    }
+                });
+            
+                map.addSource('points-data', {
+                    type: 'geojson',
+                    data: 'http://127.0.0.1:5000/data/'+feature.properties.points_url,
+                    buffer: 64,
+                    tolerance: 0.8
+                })
+
+                map.addLayer({
+                    "id": "points",
+                    "type": "circle",
+                    "source":'points-data',
+                    "paint": {
+                        "circle-color": ['get', 'color'],
+                        "circle-radius": 5
+                    }
+                });
+
+                map.setLayoutProperty("routes", 'visibility', 'none')
+                document.getElementById("reset-button").disabled = false;
+    });
+
+    //Hide loading bar once tiles from geojson are loaded
+    map.on('data', function(e) {
+            if (e.dataType === 'source' && e.sourceId === 'routes-data') {
+                document.getElementById("loader").style.visibility = "hidden";
+                console.log("Loader hidden");
+            }
+    });
+});
+
+document.getElementById('reset-button').addEventListener('click', function(e) {
+    map.setLayoutProperty("routes", "visibility", "visible")
+    map.removeLayer("points")
+    map.removeSource("points-data")
+    document.getElementById("reset-button").disabled = true;
+});
+</script>
+
+</body>
+</html>
