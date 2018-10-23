@@ -104,7 +104,7 @@ def json_to_geojson(json_fd, max_speed, min_speed):
         geo_json['properties']['speed'].append(coords['speed'])
         geo_json['properties']['speed_distr'][int(coords['speed']/10)] += 1
     avg_speed = sum(geo_json['properties']['speed'])/len(geo_json['properties']['speed'])
-    geo_json['properties']['avg_speed'] = avg_speed
+    geo_json['properties']['avg_speed'] = round(avg_speed, 2)
     geo_json['properties']['color'] = speed_to_gradient(max_speed, min_speed, avg_speed)
     return geo_json
 
@@ -152,4 +152,4 @@ def main():
     write_json(geo_json, 'all_lines.json')
 
 if __name__ == '__main__':
-    main()
+    main() 

@@ -8,10 +8,6 @@ CORS(app)
 MAPBOX_ACCESS_KEY = app.config['MAPBOX_ACCESS_KEY']
 
 @app.route("/")
-def hello():
-    return "Welcome to my Comma ai project"
-
-@app.route('/mapbox_js')
 def mapbox_js():
     return render_template(
         'mapbox_js.html',
