@@ -1,15 +1,15 @@
 # Visualize chiffr
 ## Getting started
 1. Clone this project
-2. 'pip install -r requirments.txt'
-3. Place all your json files in a folder called 'trips'
-4. 'python geoJSON.py' to preprocess the json files
-5. 'sh start.sh'
+2. `pip install -r requirments.txt`
+3. Place all your json files in a folder called `trips`
+4. `python geoJSON.py` to preprocess the json files
+5. `sh start.sh`
 ## Data Preprocessing
 All data preprocessing is done in geoJSON.py
 ### Converting JSON to GeoJSON
 The original JSON file was ~75mb, was which too big to serve. The JSON file is instead split into:
-1. all_lines.json
+1. `all_lines.json`
 This file is represents each route as a GeoJSON line. This file represents all routes in ~25mb (although in less detail). Each line additonally contains the following:
 - start_time
 - end_time
