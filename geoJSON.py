@@ -1,8 +1,8 @@
 from tqdm import tqdm
 import json
 from enum import Enum
-from os import listdir
-from os.path import isfile, join
+from os import listdir, makedirs
+from os.path import isfile, isdir, exists, join
 import random
 import string
 
@@ -114,6 +114,15 @@ def write_json(json_data, filename):
         json.dump(json_data, outfile)
 
 def main():
+    # ensure INPUT_FOLDER exist
+    if not exists(INPUT_FOLDER) or not isdir(INPUT_FOLDER):
+        print("Input folder \"%s\" not found" % INPUT_FOLDER)
+        exit(1)
+    
+    # create output folder if it does not exist
+    if not exists('./points'):
+        makedirs('./points')
+
     # get a list of all files in INPUT_FOLDER
     files = [join(INPUT_FOLDER, f) for f in listdir(INPUT_FOLDER) if isfile(join(INPUT_FOLDER, f))]
 
@@ -145,8 +154,8 @@ def main():
             point_collection = line_to_point(line, max_speed, min_speed)
             write_json(point_collection, points_url)
         
-    for line in geo_json['features']:
-        del line['properties']['speed']
+    # for line in geo_json['features']:
+    #     del line['properties']['speed']
 
     # write out our GeoJSON for lines
     write_json(geo_json, 'all_lines.json')

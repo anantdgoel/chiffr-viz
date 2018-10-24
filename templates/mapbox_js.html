@@ -9,7 +9,8 @@
     <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js'></script>
     <style>
         body { margin:0; padding:0; }
-        #map { position:absolute; top:0; bottom:0; width:100%; }
+        #map { position:absolute; top:0; bottom:0; width:100%; height:100vh;}
+        #charts { width: 0%; height:100vh; visibility: hidden; float: right; background: rgba(0, 0, 0, .8);}
         .loader {
             margin: -10px 0 0 -10px;
             height: 100px;
@@ -94,6 +95,10 @@
 <body>
 <!-- Mapbox Map -->
 <div id='map'></div>
+<div id='charts'>
+    <canvas id="speedChart" width="100%" height="40%"></canvas>
+    <canvas id="speedChart" width="100%" height="40%"></canvas>
+</div>
 
 <!-- Filters Overlay -->
 <div class='map-overlay top'>
@@ -116,7 +121,7 @@
             </div>
         </div>
 
-        
+
     </div>
 </div>
 
@@ -184,6 +189,8 @@ map.once('style.load', function(e){
             }
             var feature = features[0];
 
+            showCharts();
+
             var popup = new mapboxgl.Popup()
                 .setLngLat(map.unproject(e.point))
                 .setHTML('<h3>Route Detail</h3>' +
@@ -191,25 +198,24 @@ map.once('style.load', function(e){
                     '<li>Start time: <b>' + feature.properties.start_time + '</b></li>' +
                     '<li>End time: <b>' + feature.properties.end_time + '</b></li>' +
                     '<li>Avg speed: <b>' + feature.properties.avg_speed + '</b></li>' +
-                    '</ul>' + 
-                    '<canvas id="speedChart" width="400" height="400"></canvas>')
+                    '</ul>' )
                 .addTo(map);
 
                 console.log(JSON.parse(feature.properties.speed_distr))
 
                 var ctx = document.getElementById("speedChart");
                 var barChartData = {
-			labels: ['0-10', '10-20', '20-30', '30-40', '40-50', '50-60'],
-			datasets: [{
-				label: 'Frequency',
-				backgroundColor: feature.properties.color,
-				borderColor: feature.properties.color,
-				borderWidth: 1,
-				data: JSON.parse(feature.properties.speed_distr)
-			}]
-		};
+			        labels: ['0-10', '10-20', '20-30', '30-40', '40-50', '50-60'],
+			        datasets: [{
+				        label: 'Frequency',
+				        backgroundColor: feature.properties.color,
+				        borderColor: feature.properties.color,
+				        borderWidth: 1,
+				        data: JSON.parse(feature.properties.speed_distr)
+			        }]
+		        };
                 var speedChart = new Chart(ctx, {
-                    type: 'bar',
+                    type: 'line',
                     data: barChartData,
                     options: {
 					    responsive: true,
@@ -282,12 +288,34 @@ map.once('style.load', function(e){
     });
 });
 
+function hideCharts() {
+    // clear canvas for next chart
+    canvas = document.getElementById('speedChart');
+    const context = canvas.getContext('2d');
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    // make map 100% of the display
+    document.getElementById("map").style.width = "100%";
+    // make charts 0% of the display
+    charts_div = document.getElementById("charts");
+    charts_div.style.width = "0%";
+    charts_div.style.visibility = "hidden";
+}
+
+function showCharts() {
+    // make map 70% of the display
+    document.getElementById("map").style.width = "70%";
+    // make charts 30% of the display
+    charts_div = document.getElementById("charts");
+    charts_div.style.width = "30%";
+    charts_div.style.visibility = "visible";
+}
 
 
 document.getElementById('reset-button').addEventListener('click', function(e) {
     map.setLayoutProperty("routes", "visibility", "visible")
     map.removeLayer("points")
     map.removeSource("points-data")
+    hideCharts(); 
     document.getElementById("reset-button").style.display = "none";
 });
 </script>
