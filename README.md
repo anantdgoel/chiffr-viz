@@ -5,6 +5,8 @@
 3. Place all your json files in a folder called `trips`
 4. `python geoJSON.py` to preprocess the json files
 5. `sh start.sh`
+## Features
+[![home screenshot](/screenshots/home.png?raw=true)]
 ## Data Preprocessing
 All data preprocessing is done in geoJSON.py
 ### Converting JSON to GeoJSON
