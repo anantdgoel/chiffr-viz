@@ -133,6 +133,8 @@ def main():
         'type': 'FeatureCollection',
         'features': []
     }
+
+    speeds = {}
     
     # iterate through all json files to get GeoJSON data
     for json_file in tqdm(files):
@@ -142,6 +144,10 @@ def main():
 
             # generate random urls for the webapp to query the point data from
             points_url = ''.join(random.choice(string.ascii_letters + string.digits) for x in range(5))
+
+            # store speed arrays outside of GeoJSON
+            speeds[points_url] = line['properties']['speed']
+            
             points_url = 'points/' + points_url + '.json'
 
             # Map points to lines
@@ -153,9 +159,11 @@ def main():
             # generate the point representation of line and write to file
             point_collection = line_to_point(line, max_speed, min_speed)
             write_json(point_collection, 'data/'+points_url)
+    
+    write_json(speeds, 'data/all_speeds.json')
         
-    # for line in geo_json['features']:
-    #     del line['properties']['speed']
+    for line in geo_json['features']:
+        del line['properties']['speed']
 
     # write out our GeoJSON for lines
     write_json(geo_json, 'data/all_lines.json')

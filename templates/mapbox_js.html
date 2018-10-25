@@ -160,6 +160,14 @@ document.getElementById('reset-button').addEventListener('click', function(e) {
     document.getElementById("reset-button").style.display = "none";
 });
 
+function httpGet(theUrl)
+{
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", theUrl, false ); // false for synchronous request
+    xmlHttp.send( null );
+    return xmlHttp.responseText;
+}
+
 //  Once our map DOM is loaded, add functionality
 map.once('style.load', function(e){
     init();
@@ -186,7 +194,9 @@ map.once('style.load', function(e){
             '</ul>'
 
         var ctx = document.getElementById("speedLine");
-        var speed = JSON.parse(feature.properties.speed)
+        speed_id = feature.properties.points_url.split('/', 2)
+        speed_id[1] = speed_id[1].substring( 0, speed_id[1].indexOf( ".json" ) )
+        var speed = JSON.parse(httpGet('/data/speed/'+ speed_id[1]))
         var lineChartData = {
 			labels: [...Array(speed.length).keys()],
 			datasets: [{
