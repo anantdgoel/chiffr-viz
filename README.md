@@ -31,3 +31,11 @@ This file represents each route as a collection of GeoJSON Points. File sizes va
 - color: interpollated from a linear gradient depending on the speed
 3. `all_speeds.json`
 This file stores an array for the speed represented by each line in `all_lines.json`. However, the server only returns one array at a time, as requested. This keeps the `all_lines.json` small (35mb -> 25mb) and keeps our memory consumption low. 
+## Libararies used
+The entire web app is written using **pure** javascript, with a few packages:
+1. Mapbox GL js: I've only used this library as a render engine for maps and GeoJSON vectors.
+2. Chart.js : To display native HTLM5 charts
+3. Flask: to serve our web app
+## Possible future work
+- Add filters for dates (only see trips belonging to certain dates/times).
+- Convert GeoJSON files to Mapbox vectors before serving them.
