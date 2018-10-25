@@ -6,7 +6,14 @@
 4. `python geoJSON.py` to preprocess the json files
 5. `sh start.sh`
 ## Features
-[![home screenshot](/screenshots/home.png?raw=true)]
+The home screen visualizes all routes, and assigns them a color based on the **avg speed** of that route.
+![home screenshot](/screenshots/home.png?raw=true)
+To view more information about a route, click on it. The new route now displays colors based on the **actual speed** of the vheicle at that point.
+The top-most graphs displays the speed of the vehicle, over time. The second graphs shows the distribution of speed, according to gears. We assume that the 5 gears [1, 2, 3, 4, 5] correlate to the intervals [0-10, 10-20, 20-30, 30-40, 40-50] resspectively. If this is incorrect, since I don't know the units of measurement being used in this data, this can be easily changed.
+![charts screenshot](/screenshots/charts.png?raw=true)
+Hover on any point of a detailed route to get the speed at that point.
+![popup screenshot](/screenshots/popup.png?raw=true)
+Click on the undo button on the top left corner, to go back to all routes being displayed.
 ## Data Preprocessing
 All data preprocessing is done in geoJSON.py
 ### Converting JSON to GeoJSON
