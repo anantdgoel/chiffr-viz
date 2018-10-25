@@ -120,8 +120,8 @@ def main():
         exit(1)
     
     # create output folder if it does not exist
-    if not exists('./points'):
-        makedirs('./points')
+    if not exists('data/points'):
+        makedirs('data/points')
 
     # get a list of all files in INPUT_FOLDER
     files = [join(INPUT_FOLDER, f) for f in listdir(INPUT_FOLDER) if isfile(join(INPUT_FOLDER, f))]
@@ -152,13 +152,13 @@ def main():
 
             # generate the point representation of line and write to file
             point_collection = line_to_point(line, max_speed, min_speed)
-            write_json(point_collection, points_url)
+            write_json(point_collection, 'data/'+points_url)
         
     # for line in geo_json['features']:
     #     del line['properties']['speed']
 
     # write out our GeoJSON for lines
-    write_json(geo_json, 'all_lines.json')
+    write_json(geo_json, 'data/all_lines.json')
 
 if __name__ == '__main__':
     main() 
